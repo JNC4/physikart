@@ -6,18 +6,10 @@ import ParticleBackground from "@/components/shared/ParticleBackground";
 
 const simulations = [
   {
-    title: "Catenary Chain",
-    path: "/catenary",
-    description:
-      "Explore hanging chains and discover the elegant catenary curve. Build arches, suspension bridges, and understand why the curve differs from a parabola.",
-    icon: "⛓️",
-    color: "from-amber-500 to-orange-600",
-  },
-  {
     title: "Epicycle Orbits",
     path: "/epicycles",
     description:
-      "Watch celestial mechanics unfold through nested circular motion. Recreate retrograde planetary motion and create beautiful spirograph patterns.",
+      "Watch celestial mechanics unfold through nested circular motion. Recreate retrograde planetary motion and explore ancient astronomy.",
     icon: "🌍",
     color: "from-blue-500 to-cyan-600",
   },
@@ -25,7 +17,7 @@ const simulations = [
     title: "Standing Waves",
     path: "/waves",
     description:
-      "Pluck virtual strings and visualize harmonics. See resonance in action and explore the physics behind musical instruments and Chladni patterns.",
+      "Pluck virtual strings and visualize harmonics. See resonance in action and explore the physics behind musical instruments.",
     icon: "〰️",
     color: "from-green-500 to-emerald-600",
   },

@@ -71,14 +71,6 @@ export default function EpicyclesPage() {
           label="Moon System"
           onClick={() => setCircles(presets.moonSystem())}
         />
-        <PresetButton
-          label="Flower Pattern"
-          onClick={() => setCircles(presets.flower())}
-        />
-        <PresetButton
-          label="Spirograph"
-          onClick={() => setCircles(presets.spirograph())}
-        />
       </div>
     </div>
   );

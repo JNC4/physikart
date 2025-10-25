@@ -34,6 +34,7 @@ export default function PendulumPage() {
   const [showEnergy, setShowEnergy] = useState(false);
   const [numOverlays, setNumOverlays] = useState(1);
   const [randomness, setRandomness] = useState(0.1);
+  const [speedMultiplier, setSpeedMultiplier] = useState(1);
 
   const reset = () => {
     setInitialState({ ...initialState });
@@ -179,6 +180,66 @@ export default function PendulumPage() {
       </div>
 
       <div className="my-4 border-t border-white/10 pt-4">
+        <h3 className="text-sm font-semibold mb-3 text-gray-300">
+          Simulation Speed
+        </h3>
+        <div className="grid grid-cols-4 gap-2">
+          <button
+            onClick={() => setSpeedMultiplier(1)}
+            className={`px-3 py-2 rounded-lg text-sm transition-all ${
+              speedMultiplier === 1
+                ? "bg-cyan-500 text-white"
+                : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+            }`}
+          >
+            1x
+          </button>
+          <button
+            onClick={() => setSpeedMultiplier(2)}
+            className={`px-3 py-2 rounded-lg text-sm transition-all ${
+              speedMultiplier === 2
+                ? "bg-cyan-500 text-white"
+                : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+            }`}
+          >
+            2x
+          </button>
+          <button
+            onClick={() => setSpeedMultiplier(4)}
+            className={`px-3 py-2 rounded-lg text-sm transition-all ${
+              speedMultiplier === 4
+                ? "bg-cyan-500 text-white"
+                : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+            }`}
+          >
+            4x
+          </button>
+          <button
+            onClick={() => setSpeedMultiplier(10)}
+            className={`px-3 py-2 rounded-lg text-sm transition-all ${
+              speedMultiplier === 10
+                ? "bg-cyan-500 text-white"
+                : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+            }`}
+          >
+            10x
+          </button>
+        </div>
+        <div className="grid grid-cols-1 gap-2 mt-2">
+          <button
+            onClick={() => setSpeedMultiplier(20)}
+            className={`px-3 py-2 rounded-lg text-sm transition-all ${
+              speedMultiplier === 20
+                ? "bg-cyan-500 text-white"
+                : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+            }`}
+          >
+            20x
+          </button>
+        </div>
+      </div>
+
+      <div className="my-4 border-t border-white/10 pt-4">
         <h3 className="text-sm font-semibold mb-3 text-gray-300">Presets</h3>
         <PresetButton
           label="Gentle Swing"
@@ -313,6 +374,7 @@ export default function PendulumPage() {
         showEnergy={showEnergy}
         numOverlays={numOverlays}
         randomness={randomness}
+        speedMultiplier={speedMultiplier}
       />
     </SimulationLayout>
   );

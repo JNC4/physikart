@@ -31,9 +31,29 @@ export class WaveString {
    * Pluck the string at a given position
    */
   pluck(position: number, amplitude: number) {
+    // Clamp amplitude to reasonable range
+    const clampedAmplitude = Math.max(-50, Math.min(50, amplitude));
     const idx = Math.floor(position * (this.numPoints - 1));
     if (idx > 0 && idx < this.numPoints - 1) {
-      this.positions[idx] = amplitude;
+      // Create a smooth triangular displacement pattern
+      for (let i = 1; i < this.numPoints - 1; i++) {
+        const distFromPluck = Math.abs(i - idx);
+        const leftDist = idx;
+        const rightDist = this.numPoints - 1 - idx;
+
+        // Calculate the scale based on which side of pluck point we're on
+        let scale = 0;
+        if (i <= idx) {
+          // Left side of pluck
+          scale = i / leftDist;
+        } else {
+          // Right side of pluck
+          scale = (this.numPoints - 1 - i) / rightDist;
+        }
+
+        this.positions[i] = clampedAmplitude * scale;
+        this.velocities[i] = 0; // Start from rest
+      }
     }
   }
 
@@ -41,16 +61,30 @@ export class WaveString {
    * Drive the string at a specific frequency (for resonance)
    */
   drive(frequency: number, time: number, amplitude: number) {
-    const idx = Math.floor(this.numPoints / 4);
-    this.positions[idx] += amplitude * Math.sin(2 * Math.PI * frequency * time);
+    // Apply a gentle sinusoidal force instead of directly setting position
+    const drivePoints = [
+      Math.floor(this.numPoints / 4),
+      Math.floor(this.numPoints / 2),
+      Math.floor((3 * this.numPoints) / 4),
+    ];
+
+    const force = amplitude * Math.sin(2 * Math.PI * frequency * time);
+
+    drivePoints.forEach((idx) => {
+      if (idx > 0 && idx < this.numPoints - 1) {
+        // Add velocity instead of forcing position
+        this.velocities[idx] += force * 0.02;
+      }
+    });
   }
 
   /**
    * Update the wave simulation
    */
   update(dt: number) {
+    const newVelocities = [...this.velocities];
     const newPositions = [...this.positions];
-    const k = this.tension / this.mass; // spring constant
+    const k = (this.tension / this.mass) * 0.1; // Reduced spring constant for stability
     const dx = this.length / (this.numPoints - 1);
 
     for (let i = 1; i < this.numPoints - 1; i++) {
@@ -59,17 +93,30 @@ export class WaveString {
         (this.positions[i + 1] - 2 * this.positions[i] + this.positions[i - 1]) /
         (dx * dx);
 
-      const acceleration = k * d2y_dx2 - this.damping * this.velocities[i];
+      const acceleration = k * d2y_dx2 - this.damping * this.velocities[i] * 20;
 
-      this.velocities[i] += acceleration * dt;
-      newPositions[i] += this.velocities[i] * dt;
+      newVelocities[i] = this.velocities[i] + acceleration * dt;
+      newPositions[i] = this.positions[i] + newVelocities[i] * dt;
+
+      // Stability check: clamp to reasonable bounds
+      if (!isFinite(newPositions[i]) || Math.abs(newPositions[i]) > 500) {
+        newPositions[i] = 0;
+        newVelocities[i] = 0;
+      }
+
+      if (!isFinite(newVelocities[i]) || Math.abs(newVelocities[i]) > 1000) {
+        newVelocities[i] = 0;
+      }
     }
 
     // Fixed endpoints
     newPositions[0] = 0;
     newPositions[this.numPoints - 1] = 0;
+    newVelocities[0] = 0;
+    newVelocities[this.numPoints - 1] = 0;
 
     this.positions = newPositions;
+    this.velocities = newVelocities;
   }
 
   getPositions(): number[] {
@@ -113,11 +160,22 @@ export function analyzeHarmonics(
 
     for (let i = 0; i < positions.length; i++) {
       const x = i / (positions.length - 1);
+      const pos = positions[i];
+
+      // Skip if position is not finite
+      if (!isFinite(pos)) continue;
+
       // Project onto sine wave of frequency n
-      amplitude += positions[i] * Math.sin(n * Math.PI * x);
+      amplitude += pos * Math.sin(n * Math.PI * x);
     }
 
     amplitude = Math.abs(amplitude) / positions.length;
+
+    // Ensure result is finite
+    if (!isFinite(amplitude)) {
+      amplitude = 0;
+    }
+
     harmonics.push(amplitude);
   }
 

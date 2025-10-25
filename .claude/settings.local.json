@@ -6,7 +6,16 @@
       "Bash(npm install:*)",
       "Bash(npm run build:*)",
       "Bash(git init:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git remote add:*)",
+      "Bash(git branch:*)",
+      "Bash(git push:*)",
+      "Bash(vercel --prod)",
+      "Bash(vercel:*)",
+      "Bash(curl:*)",
+      "Bash(node test-catenary.js:*)",
+      "Bash(npm run dev)"
     ],
     "deny": [],
     "ask": []

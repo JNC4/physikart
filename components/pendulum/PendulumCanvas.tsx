@@ -20,6 +20,7 @@ interface PendulumCanvasProps {
   showEnergy: boolean;
   numOverlays: number;
   randomness: number;
+  speedMultiplier?: number;
 }
 
 const PendulumCanvas: React.FC<PendulumCanvasProps> = ({
@@ -31,6 +32,7 @@ const PendulumCanvas: React.FC<PendulumCanvasProps> = ({
   showEnergy,
   numOverlays,
   randomness,
+  speedMultiplier = 1,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const energyCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -64,36 +66,39 @@ const PendulumCanvas: React.FC<PendulumCanvasProps> = ({
   // Animation loop
   useEffect(() => {
     const animate = () => {
-      const dt = 0.016; // ~60fps
+      const dt = 0.016 * speedMultiplier; // ~60fps with speed multiplier
 
-      // Update all pendulums
-      setStates((prevStates) =>
-        prevStates.map((state) => rk4Step(state, params, dt))
-      );
+      // Update all pendulums and use the new states for trails
+      setStates((prevStates) => {
+        const newStates = prevStates.map((state) => rk4Step(state, params, dt));
 
-      // Update trails
-      setTrails((prevTrails) =>
-        prevTrails.map((trail, idx) => {
-          const positions = getPositions(states[idx], params, origin);
-          const newTrail = [...trail, positions.bob2];
-          if (newTrail.length > trailLength) {
-            return newTrail.slice(-trailLength);
-          }
-          return newTrail;
-        })
-      );
+        // Update trails using the newly calculated states
+        setTrails((prevTrails) =>
+          prevTrails.map((trail, idx) => {
+            if (!newStates[idx]) return trail;
+            const positions = getPositions(newStates[idx], params, origin);
+            const newTrail = [...trail, positions.bob2];
+            if (newTrail.length > trailLength) {
+              return newTrail.slice(-trailLength);
+            }
+            return newTrail;
+          })
+        );
 
-      // Update energy history (only for first pendulum)
-      if (showEnergy) {
-        setEnergyHistory((prev) => {
-          const energy = calculateEnergy(states[0], params);
-          const newHistory = [...prev, energy];
-          if (newHistory.length > 200) {
-            return newHistory.slice(-200);
-          }
-          return newHistory;
-        });
-      }
+        // Update energy history (only for first pendulum)
+        if (showEnergy && newStates[0]) {
+          setEnergyHistory((prev) => {
+            const energy = calculateEnergy(newStates[0], params);
+            const newHistory = [...prev, energy];
+            if (newHistory.length > 200) {
+              return newHistory.slice(-200);
+            }
+            return newHistory;
+          });
+        }
+
+        return newStates;
+      });
 
       animationRef.current = requestAnimationFrame(animate);
     };
@@ -105,7 +110,7 @@ const PendulumCanvas: React.FC<PendulumCanvasProps> = ({
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [states, params, trailLength, showEnergy, origin]);
+  }, [params, trailLength, showEnergy, origin, speedMultiplier]);
 
   // Draw main canvas
   useEffect(() => {
